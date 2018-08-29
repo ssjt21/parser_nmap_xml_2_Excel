@@ -135,7 +135,7 @@ def parseNmap(filename):
 
         print e
         return {}
-
+    data_lst=[]
     for host in root.iter('host'):
         if host.find('status').get('state') == 'down':
             continue
@@ -149,7 +149,8 @@ def parseNmap(filename):
             service=port.find('service')
             service= service.get('name','') if service else ""
             ports.append([port_num,service,state])
-        return {address:ports}
+            data_lst.append({address:ports})
+    return data_lst
 
 # filename='report/111.26.138.28.xml'
 #
@@ -224,11 +225,11 @@ def reportEXCEL(filename,datalst,title=TITLE,style=DEFAULT_STYLE,**kwargs):
 def main(XMLPATH,REPORTFILENAME):
 
     data_lst=[]
-    for xml in get_xml():
+    for xml in get_xml(XMLPATH):
 
         data=parseNmap(xml)
         if data:
-            data_lst.append(data)
+            data_lst.extend(data)
             # print data
 
 
