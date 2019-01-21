@@ -4,7 +4,7 @@
 @author:随时静听
 @file: parserXML.py
 @time: 2018/08/23
-@email:wang_di@topsec.com.cn
+
 """
 # http://blog.51cto.com/maoyao/1772102
 # https://xlsxwriter.readthedocs.io/format.html
