@@ -1,28 +1,26 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-"""
-@author:随时静听
-@file: parserXML.py
-@time: 2018/08/23
-
-"""
 # http://blog.51cto.com/maoyao/1772102
 # https://xlsxwriter.readthedocs.io/format.html
+
+"""
+@author: 随时静听
+@file: parser_nmap_xml_2_excel.py
+@create_time: 2018/08/23
+@editor: AssassinQ
+@edit_time: 2019/08/14
+"""
+
 import re
 try:
     import xml.etree.cElementTree as ET
 except:
     import xml.etree.ElementTree as ET
 import glob
-
 import os
 import time
-
-# import xlwt
 import xlsxwriter
-
 import argparse
-
 from multiprocessing import Process,Pool,Lock
 
 XMLPATH='report'
@@ -30,7 +28,6 @@ XMLPATH='report'
 DEFAULT_STYLE={
         'font_size': 12,  # 字体大小
         'bold': False,  # 是否粗体
-        # 'bg_color': '#101010',  # 表格背景颜色
         'font_color': 'black',  # 字体颜色
         'align': 'left',  # 居中对齐
         'valign':'vcenter',
@@ -41,6 +38,7 @@ DEFAULT_STYLE={
         'right': 2,  # 右边框
         'bottom': 2  # 底边框
 }
+
 TITLE=[
     (u'序号',8),
     ('IP',22),
@@ -50,18 +48,16 @@ TITLE=[
 ]
 
 
-
 def get_xml(filepath=XMLPATH):
     try:
         return map(lambda x:os.path.join(filepath,x),glob.glob1(filepath,'*.xml'))
     except:
         return []
 
-
 def test_use_xlsxwriter():
-    #创建 excel
+    # 创建excel
     book=xlsxwriter.Workbook('hello.xlsx')
-    #创建工作簿
+    # 创建工作簿
     sheet=book.add_worksheet('FIRST')
     # 添加样式
     ItemStyle = book.add_format({
@@ -99,7 +95,7 @@ def test_use_xlsxwriter():
     sheet.write(row, 0, 'Total')
     sheet.write(row, 1, '=SUM(B2:B4)')  # 写入公式
 
-    #或者使用下面的样式
+    # 或者使用下面的样式
     # ItemStyle.set_font_size(10)
     # ItemStyle.set_bold()
     # ItemStyle.set_bg_color('#101010')
@@ -121,11 +117,9 @@ def test_use_xlsxwriter():
 
 # test_use_xlsxwriter()
 
-#获取写入格式
+# 获取写入格式
 def get_style(default=DEFAULT_STYLE,**kw):
     return  default.update(**kw)
-
-
 
 def parseNmap(filename):
     try:
@@ -157,7 +151,6 @@ def parseNmap(filename):
 #
 # print parseNmap(filename)
 
-
 def reportEXCEL(filename,datalst,title=TITLE,style=DEFAULT_STYLE,**kwargs):
     if not datalst:
         return ''
@@ -188,23 +181,23 @@ def reportEXCEL(filename,datalst,title=TITLE,style=DEFAULT_STYLE,**kwargs):
 
         sheet.write(0,index,t[0],title_style)
 
-
-
-
-    #
     row=1
     col=0
     style=book.add_format(style)
     index2=0
-    for index,item in enumerate(datalst):
-        for ip,ports in item.items():
-            port_num=len(ports)
+    pre_ip = '0.0.0.0'
+    for index, item in enumerate(datalst):
+        for ip, ports in item.items():
+            if ip != pre_ip:
+                pre_ip = ip
+            else:
+                continue
+            port_num = len(ports)
+            index2 += 1
+            print '[*]', index2, '==>', ip
             if not ports:
                 continue
-            index2=index2+1
-            for  i,data in enumerate(ports):
-
-
+            for i, data in enumerate(ports):
                 sheet.write(row,2,data[0],style)
                 sheet.write(row,3,data[1],style)
                 sheet.write(row,4,data[2],style)
@@ -213,50 +206,25 @@ def reportEXCEL(filename,datalst,title=TITLE,style=DEFAULT_STYLE,**kwargs):
                 sheet.merge_range('B'+str(row-port_num+1)+':B'+str(row),ip,style)
                 sheet.merge_range('A'+str(row-port_num+1)+':A'+str(row),index2,style)
             else:
-                print index2
                 sheet.write(row-1,0,index2,style)
                 sheet.write(row-1,1,ip,style)
-    print  'Reprot result of xml parser to file: %s' % filename
+    print '[+] Reprot result of xml parser to file: %s' % filename
     book.close()
 
-
-
-
 def main(XMLPATH,REPORTFILENAME):
-
     data_lst=[]
     for xml in get_xml(XMLPATH):
-
         data=parseNmap(xml)
         if data:
             data_lst.extend(data)
             # print data
-
-
     reportEXCEL(REPORTFILENAME,data_lst)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv)<3:
         print '[!] Usage: parserXML.py XMLPATH [reportfilename]'
-        print '[!] Demo: parserXML.py  xmldir  result.xlsx'
+        print '[!] Demo: parserXML.py xmldir result.xlsx'
     else:
 
         XMLPATH=sys.argv[1]
@@ -268,9 +236,5 @@ if __name__ == '__main__':
                 print "[!] '%s' path does not exists!" % XMLPATH
                 exit(1)
         main(XMLPATH,REPORTFILENAME)
-
-
-
-
     # main()
     pass
