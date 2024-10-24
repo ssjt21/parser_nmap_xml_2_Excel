@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@author:随时静听
 @file: parserXML.py
 @time: 2018/08/23
 
